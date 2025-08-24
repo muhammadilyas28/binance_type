@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Eye, EyeOff, User, Mail, Check, Plus, Eye as EyeIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-export function Login() {
+export default function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
     const [formData, setFormData] = useState({
