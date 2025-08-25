@@ -14,6 +14,16 @@ interface PaymentRequest {
   description: string
 }
 
+interface BonusRecord {
+  id: number
+  userId: string
+  userName: string
+  type: string
+  amount: number
+  date: string
+  status: string
+}
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'chat' | 'trading' | 'users' | 'funds'>('dashboard')
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
@@ -260,7 +270,7 @@ export default function AdminDashboard() {
     bonusPercentage: 5,
     maxBonusAmount: 500
   })
-  const [bonusHistory, setBonusHistory] = useState([
+  const [bonusHistory, setBonusHistory] = useState<BonusRecord[]>([
     {
       id: 1,
       userId: 'U001',
@@ -291,7 +301,7 @@ export default function AdminDashboard() {
   ])
   const [showEditFundsModal, setShowEditFundsModal] = useState(false)
   const [showEditBonusModal, setShowEditBonusModal] = useState(false)
-  const [editingBonus, setEditingBonus] = useState<any>(null)
+  const [editingBonus, setEditingBonus] = useState<BonusRecord | null>(null)
   const [fundsSubTab, setFundsSubTab] = useState<'funds' | 'bonuses'>('funds')
   const [editFundsData, setEditFundsData] = useState({
     dailyBonus: 50,
@@ -450,7 +460,7 @@ export default function AdminDashboard() {
     setShowEditFundsModal(false)
   }
 
-  const handleEditBonus = (bonus: any) => {
+  const handleEditBonus = (bonus: BonusRecord) => {
     setEditingBonus(bonus)
     setShowEditBonusModal(true)
   }
@@ -1245,129 +1255,276 @@ export default function AdminDashboard() {
 
            {/* Funds & Bonuses Tab Content */}
            {activeTab === 'funds' && (
-             <div className="bg-[#0f141b] border border-[#2a2a2a] rounded-2xl shadow-lg overflow-hidden">
-               <div className="px-2 py-2 border-b border-[#2a2a2a]">
+             <div className="space-y-6">
+               {/* Header */}
+               <div className="bg-[#0f141b] border border-[#2a2a2a] rounded-2xl p-6 shadow-lg">
                  <h2 className="text-lg font-medium text-white">Funds & Bonuses Management</h2>
-                 <p className="text-sm text-gray-400 mt-1">Configure daily bonuses, deposit limits, and bonus history.</p>
+                 <p className="text-sm text-gray-400 mt-1">Configure daily bonuses, deposit limits, and manage bonus history</p>
+               </div> 
+
+               {/* Sub Navigation Tabs */}
+               <div className="bg-[#0f141b] border border-[#2a2a2a] rounded-2xl p-1 shadow-lg">
+                 <div className="flex space-x-1">
+                   <button
+                     onClick={() => setFundsSubTab('funds')}
+                     className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                       fundsSubTab === 'funds'
+                         ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                         : 'text-gray-400 hover:text-white hover:bg-[#181d23]'
+                     }`}
+                   >
+                     <div className="flex items-center justify-center space-x-2">
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                       </svg>
+                       <span>Funds Settings</span>
+                     </div>
+                   </button>
+                   <button
+                     onClick={() => setFundsSubTab('bonuses')}
+                     className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                       fundsSubTab === 'bonuses'
+                         ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                         : 'text-gray-400 hover:text-white hover:bg-[#181d23]'
+                     }`}
+                   >
+                     <div className="flex items-center justify-center space-x-2">
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                       </svg>
+                       <span>Bonus History</span>
+                     </div>
+                   </button>
+                 </div>
                </div>
-               <div className="p-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   {/* Daily Bonus */}
-                   <div className="bg-[#181d23] border border-[#2a2a2a] rounded-2xl p-6 shadow-lg">
-                     <div className="flex items-center justify-between mb-4">
-                       <h3 className="text-xl font-bold text-white">Daily Bonus</h3>
+
+               {/* Funds Settings Tab */}
+               {fundsSubTab === 'funds' && (
+                 <div className="bg-[#0f141b] border border-[#2a2a2a] rounded-2xl shadow-lg overflow-hidden">
+                   <div className="px-6 py-4 border-b border-[#2a2a2a]">
+                     <div className="flex items-center justify-between">
+                       <div>
+                         <h3 className="text-lg font-medium text-white">Funds Configuration</h3>
+                         <p className="text-sm text-gray-400 mt-1">Manage daily bonuses, deposit limits, and bonus percentages</p>
+                       </div>
                        <button
                          onClick={handleEditFunds}
-                         className="px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+                         className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center space-x-2"
                        >
-                         Edit
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                         </svg>
+                         <span>Edit Settings</span>
                        </button>
                      </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Current Daily Bonus:</span>
-                       <span className="text-2xl font-bold text-green-400">${fundsData.dailyBonus}</span>
-                     </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Max Daily Bonus:</span>
-                       <span className="text-2xl font-bold text-green-400">${fundsData.maxDailyBonus}</span>
-                     </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Bonus Percentage:</span>
-                       <span className="text-2xl font-bold text-green-400">{fundsData.bonusPercentage}%</span>
-                     </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Max Bonus Amount:</span>
-                       <span className="text-2xl font-bold text-green-400">${fundsData.maxBonusAmount}</span>
-                     </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Minimum Deposit:</span>
-                       <span className="text-2xl font-bold text-green-400">${fundsData.minDeposit}</span>
-                     </div>
-                     <div className="flex items-center justify-between mb-4">
-                       <span className="text-sm text-gray-400">Maximum Deposit:</span>
-                       <span className="text-2xl font-bold text-green-400">${fundsData.maxDeposit}</span>
-                     </div>
                    </div>
+                   <div className="p-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                       {/* Daily Bonus Card */}
+                       <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-purple-400 font-medium">Daily</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Daily Bonus</h4>
+                         <p className="text-2xl font-bold text-white">${fundsData.dailyBonus}</p>
+                         <p className="text-xs text-gray-500 mt-1">Per user per day</p>
+                       </div>
 
-                   {/* Bonus History */}
-                   <div className="bg-[#181d23] border border-[#2a2a2a] rounded-2xl p-6 shadow-lg">
-                     <h3 className="text-xl font-bold text-white mb-4">Bonus History</h3>
-                     <div className="overflow-x-auto">
-                       <table className="min-w-full divide-y divide-[#2a2a2a]">
-                         <thead className="bg-[#181d23]">
-                           <tr>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               User
-                             </th>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               Type
-                             </th>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               Amount
-                             </th>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               Date
-                             </th>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               Status
-                             </th>
-                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                               Actions
-                             </th>
-                           </tr>
-                         </thead>
-                         <tbody className="bg-[#0f141b] divide-y divide-[#2a2a2a]">
-                           {bonusHistory.map((bonus) => (
-                             <tr key={bonus.id} className="hover:bg-[#181d23] transition-colors">
-                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                                 {bonus.userName}
-                               </td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                 {bonus.type.charAt(0).toUpperCase() + bonus.type.slice(1)}
-                               </td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                 ${bonus.amount}
-                               </td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                                 {new Date(bonus.date).toLocaleDateString()}
-                               </td>
-                               <td className="px-6 py-4 whitespace-nowrap">
-                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                   bonus.status === 'credited'
-                                     ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                     : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                 }`}>
-                                   {bonus.status.charAt(0).toUpperCase() + bonus.status.slice(1)}
-                                 </span>
-                               </td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                 <div className="flex space-x-2">
-                                   <button
-                                     onClick={() => handleEditBonus(bonus)}
-                                     className="text-blue-400 hover:text-blue-300 transition-colors"
-                                   >
-                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                     </svg>
-                                   </button>
-                                   <button
-                                     onClick={() => handleDeleteBonus(bonus.id)}
-                                     className="text-red-400 hover:text-red-300 transition-colors"
-                                   >
-                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                     </svg>
-                                   </button>
-                                 </div>
-                               </td>
-                             </tr>
-                           ))}
-                         </tbody>
-                       </table>
+                       {/* Max Daily Bonus Card */}
+                       <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-blue-400 font-medium">Limit</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Max Daily Bonus</h4>
+                         <p className="text-2xl font-bold text-white">${fundsData.maxDailyBonus}</p>
+                         <p className="text-xs text-gray-500 mt-1">Maximum per day</p>
+                       </div>
+
+                       {/* Bonus Percentage Card */}
+                       <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-green-400 font-medium">Rate</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Bonus Percentage</h4>
+                         <p className="text-2xl font-bold text-white">{fundsData.bonusPercentage}%</p>
+                         <p className="text-xs text-gray-500 mt-1">On deposits</p>
+                       </div>
+
+                       {/* Max Bonus Amount Card */}
+                       <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-yellow-400 font-medium">Max</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Max Bonus Amount</h4>
+                         <p className="text-2xl font-bold text-white">${fundsData.maxBonusAmount}</p>
+                         <p className="text-xs text-gray-500 mt-1">Per transaction</p>
+                       </div>
+
+                       {/* Min Deposit Card */}
+                       <div className="bg-gradient-to-br from-red-500/10 to-pink-500/10 border border-red-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-red-400 font-medium">Min</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Min Deposit</h4>
+                         <p className="text-2xl font-bold text-white">${fundsData.minDeposit}</p>
+                         <p className="text-xs text-gray-500 mt-1">Minimum amount</p>
+                       </div>
+
+                       {/* Max Deposit Card */}
+                       <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-6">
+                         <div className="flex items-center justify-between mb-4">
+                           <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl">
+                             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                             </svg>
+                           </div>
+                           <span className="text-xs text-indigo-400 font-medium">Max</span>
+                         </div>
+                         <h4 className="text-sm font-medium text-gray-400 mb-2">Max Deposit</h4>
+                         <p className="text-2xl font-bold text-white">${fundsData.maxDeposit}</p>
+                         <p className="text-xs text-gray-500 mt-1">Maximum amount</p>
+                       </div>
                      </div>
                    </div>
                  </div>
-               </div>
+               )}
+
+               {/* Bonus History Tab */}
+               {fundsSubTab === 'bonuses' && (
+                 <div className="bg-[#0f141b] border border-[#2a2a2a] rounded-2xl shadow-lg overflow-hidden">
+                   <div className="px-6 py-4 border-b border-[#2a2a2a]">
+                     <div className="flex items-center justify-between">
+                       <div>
+                         <h3 className="text-lg font-medium text-white">Bonus History</h3>
+                         <p className="text-sm text-gray-400 mt-1">Track all bonus distributions and manage records</p>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <span className="text-sm text-gray-400">
+                           Total: {bonusHistory.length} records
+                         </span>
+                       </div>
+                     </div>
+                   </div>
+                   <div className="overflow-x-auto">
+                     <table className="min-w-full divide-y divide-[#2a2a2a]">
+                       <thead className="bg-[#181d23]">
+                         <tr>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             User
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             Type
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             Amount
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             Date
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             Status
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                             Actions
+                           </th>
+                         </tr>
+                       </thead>
+                       <tbody className="bg-[#0f141b] divide-y divide-[#2a2a2a]">
+                         {bonusHistory.map((bonus) => (
+                           <tr key={bonus.id} className="hover:bg-[#181d23] transition-colors">
+                             <td className="px-6 py-4 whitespace-nowrap">
+                               <div className="flex items-center">
+                                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                                   <span className="text-white font-semibold text-sm">
+                                     {bonus.userName.charAt(0)}
+                                   </span>
+                                 </div>
+                                 <div>
+                                   <div className="text-sm font-medium text-white">{bonus.userName}</div>
+                                   <div className="text-sm text-gray-400">ID: {bonus.userId}</div>
+                                 </div>
+                               </div>
+                             </td>
+                             <td className="px-6 py-4 whitespace-nowrap">
+                               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                 bonus.type === 'daily_bonus' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                                 bonus.type === 'deposit_bonus' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                 'bg-green-500/20 text-green-400 border border-green-500/30'
+                               }`}>
+                                 {bonus.type.charAt(0).toUpperCase() + bonus.type.slice(1)}
+                               </span>
+                             </td>
+                             <td className="px-6 py-4 whitespace-nowrap">
+                               <div className="text-sm font-bold text-white">${bonus.amount}</div>
+                             </td>
+                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                               {new Date(bonus.date).toLocaleDateString()}
+                             </td>
+                             <td className="px-6 py-4 whitespace-nowrap">
+                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                 bonus.status === 'credited'
+                                   ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                   : bonus.status === 'pending'
+                                   ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                   : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                               }`}>
+                                 {bonus.status.charAt(0).toUpperCase() + bonus.status.slice(1)}
+                               </span>
+                             </td>
+                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                               <div className="flex space-x-2">
+                                 <button
+                                   onClick={() => handleEditBonus(bonus)}
+                                   className="text-blue-400 hover:text-blue-300 transition-colors p-1 hover:bg-blue-500/10 rounded"
+                                   title="Edit"
+                                 >
+                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                   </svg>
+                                 </button>
+                                 <button
+                                   onClick={() => handleDeleteBonus(bonus.id)}
+                                   className="text-red-400 hover:text-red-300 transition-colors p-1 hover:bg-red-500/10 rounded"
+                                   title="Delete"
+                                 >
+                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                   </svg>
+                                 </button>
+                               </div>
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                 </div>
+               )}
              </div>
            )}
            </div>
@@ -1659,7 +1816,7 @@ export default function AdminDashboard() {
                  <input
                    type="text"
                    value={editingBonus.userName}
-                   onChange={(e) => setEditingBonus(prev => ({ ...prev, userName: e.target.value }))}
+                   onChange={(e) => setEditingBonus((prev: BonusRecord | null) => prev ? { ...prev, userName: e.target.value } as BonusRecord : null)}
                    className="w-full px-3 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                    placeholder="Enter user name"
                  />
@@ -1672,7 +1829,7 @@ export default function AdminDashboard() {
                  </label>
                  <select
                    value={editingBonus.type}
-                   onChange={(e) => setEditingBonus(prev => ({ ...prev, type: e.target.value }))}
+                   onChange={(e) => setEditingBonus((prev: BonusRecord | null) => prev ? { ...prev, type: e.target.value } as BonusRecord : null)}
                    className="w-full px-3 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  >
                    <option value="daily_bonus">Daily Bonus</option>
@@ -1690,7 +1847,7 @@ export default function AdminDashboard() {
                  <input
                    type="number"
                    value={editingBonus.amount}
-                   onChange={(e) => setEditingBonus(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                   onChange={(e) => setEditingBonus((prev: BonusRecord | null) => prev ? { ...prev, amount: Number(e.target.value) } as BonusRecord : null)}
                    className="w-full px-3 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                    placeholder="Enter bonus amount"
                  />
@@ -1704,7 +1861,7 @@ export default function AdminDashboard() {
                  <input
                    type="date"
                    value={editingBonus.date}
-                   onChange={(e) => setEditingBonus(prev => ({ ...prev, date: e.target.value }))}
+                   onChange={(e) => setEditingBonus((prev: BonusRecord | null) => prev ? { ...prev, date: e.target.value } as BonusRecord : null)}
                    className="w-full px-3 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  />
                </div>
@@ -1716,7 +1873,7 @@ export default function AdminDashboard() {
                  </label>
                  <select
                    value={editingBonus.status}
-                   onChange={(e) => setEditingBonus(prev => ({ ...prev, status: e.target.value }))}
+                   onChange={(e) => setEditingBonus((prev: BonusRecord | null) => prev ? { ...prev, status: e.target.value } as BonusRecord : null)}
                    className="w-full px-3 py-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  >
                    <option value="credited">Credited</option>
