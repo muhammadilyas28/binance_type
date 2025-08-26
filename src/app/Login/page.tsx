@@ -14,6 +14,7 @@ export default function Login() {
     })
     const [errors, setErrors] = useState<{[key: string]: string}>({})
     const [isLoading, setIsLoading] = useState(false)
+    const [isAdmin, setIsAdmin] = useState(false)
     const router = useRouter()
 
     const validateForm = () => {
@@ -62,17 +63,128 @@ export default function Login() {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000))
             
-            // For demo purposes, accept any valid email/password
-            // In real app, you'd validate against your backend
-            if (formData.email && formData.password.length >= 6) {
-                // Store user data in localStorage or context
-                localStorage.setItem('user', JSON.stringify({
-                    email: formData.email,
-                    fullName: formData.fullName || 'User'
-                }))
-                
-                // Redirect to dashboard
-                router.push('/admin-dashboard')
+            if (activeTab === 'register') {
+                // Registration logic
+                if (isAdmin) {
+                    // Register admin
+                    const adminData = {
+                        email: formData.email,
+                        fullName: formData.fullName,
+                        password: formData.password,
+                        role: 'admin',
+                        createdAt: new Date().toISOString()
+                    }
+                    
+                    // Get existing admins or create new array
+                    const existingAdmins = JSON.parse(localStorage.getItem('admins') || '[]')
+                    
+                    // Check if admin already exists
+                    const adminExists = existingAdmins.find((admin: any) => admin.email === formData.email)
+                    if (adminExists) {
+                        setErrors({ email: 'Admin with this email already exists' })
+                        setIsLoading(false)
+                        return
+                    }
+                    
+                    // Save admin to localStorage
+                    existingAdmins.push(adminData)
+                    localStorage.setItem('admins', JSON.stringify(existingAdmins))
+                    
+                    // Store current user session
+                    localStorage.setItem('user', JSON.stringify({
+                        email: formData.email,
+                        fullName: formData.fullName,
+                        role: 'admin'
+                    }))
+                    
+                    // Switch to login tab after successful registration
+                    setActiveTab('login')
+                    setFormData({ fullName: '', email: '', password: '' })
+                    setErrors({})
+                    
+                    // Show success message (optional)
+                    alert('Admin registered successfully! Please login.')
+                } else {
+                    // Register regular user
+                    const userData = {
+                        email: formData.email,
+                        fullName: formData.fullName,
+                        password: formData.password,
+                        role: 'user',
+                        createdAt: new Date().toISOString()
+                    }
+                    
+                    // Get existing users or create new array
+                    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]')
+                    
+                    // Check if user already exists
+                    const userExists = existingUsers.find((user: any) => user.email === formData.email)
+                    if (userExists) {
+                        setErrors({ email: 'User with this email already exists' })
+                        setIsLoading(false)
+                        return
+                    }
+                    
+                    // Save user to localStorage
+                    existingUsers.push(userData)
+                    localStorage.setItem('users', JSON.stringify(existingUsers))
+                    
+                    // Store current user session
+                    localStorage.setItem('user', JSON.stringify({
+                        email: formData.email,
+                        fullName: formData.fullName,
+                        role: 'user'
+                    }))
+                    
+                    // Switch to login tab after successful registration
+                    setActiveTab('login')
+                    setFormData({ fullName: '', email: '', password: '' })
+                    setErrors({})
+                    
+                    // Show success message (optional)
+                    alert('User registered successfully! Please login.')
+                }
+            } else {
+                // Login logic
+                if (isAdmin) {
+                    // Login as admin
+                    const admins = JSON.parse(localStorage.getItem('admins') || '[]')
+                    const admin = admins.find((admin: any) => 
+                        admin.email === formData.email && admin.password === formData.password
+                    )
+                    
+                    if (admin) {
+                        // Store current user session
+                        localStorage.setItem('user', JSON.stringify({
+                            email: admin.email,
+                            fullName: admin.fullName,
+                            role: 'admin'
+                        }))
+                        
+                        router.push('/admin-dashboard')
+                    } else {
+                        setErrors({ email: 'Invalid admin credentials' })
+                    }
+                } else {
+                    // Login as regular user
+                    const users = JSON.parse(localStorage.getItem('users') || '[]')
+                    const user = users.find((user: any) => 
+                        user.email === formData.email && user.password === formData.password
+                    )
+                    
+                    if (user) {
+                        // Store current user session
+                        localStorage.setItem('user', JSON.stringify({
+                            email: user.email,
+                            fullName: user.fullName,
+                            role: 'user'
+                        }))
+                        
+                        router.push('/dashboard')
+                    } else {
+                        setErrors({ email: 'Invalid user credentials' })
+                    }
+                }
             }
         } catch (error) {
             console.error('Login error:', error)
@@ -219,6 +331,34 @@ export default function Login() {
                             <h1 className="text-white text-2xl lg:text-3xl font-bold mb-2">Login your admin Portal</h1>
                             <p className="text-gray-400 text-sm">Access your trading dashboard</p>
                         </div>
+
+                        {/* Admin Toggle */}
+                        {/* <div className="flex items-center justify-center mb-6 lg:mb-8">
+                            <div className="flex items-center bg-[#2a2a2a] rounded-full p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAdmin(false)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                        !isAdmin
+                                            ? 'bg-gradient-to-r from-blue-500/50 to-green-500/50 text-white'
+                                            : 'text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    User
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAdmin(true)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                        isAdmin
+                                            ? 'bg-gradient-to-r from-blue-500/50 to-green-500/50 text-white'
+                                            : 'text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    Admin
+                                </button>
+                            </div>
+                        </div> */}
 
                         {/* Tabs */}
                         <div className="flex bg-[#2a2a2a] rounded-full p-1 mb-6 lg:mb-8">
