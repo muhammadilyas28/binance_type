@@ -14,7 +14,6 @@ export default function Login() {
     })
     const [errors, setErrors] = useState<{[key: string]: string}>({})
     const [isLoading, setIsLoading] = useState(false)
-    const [selectedRole, setSelectedRole] = useState<'user' | 'admin' | null>(null)
     const router = useRouter()
 
     const validateForm = () => {
@@ -48,23 +47,12 @@ export default function Login() {
         }
     }
 
-    const handleRoleSelect = (role: 'user' | 'admin') => {
-        setSelectedRole(role)
-        // Clear role error when role is selected
-        if (errors.role) {
-            setErrors(prev => ({ ...prev, role: '' }))
-        }
-    }
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         
         if (!validateForm()) {
-            return
-        }
-        
-        if (!selectedRole) {
-            setErrors(prev => ({ ...prev, role: 'Please select a role first' }))
             return
         }
         
@@ -80,16 +68,11 @@ export default function Login() {
                 // Store user data in localStorage or context
                 localStorage.setItem('user', JSON.stringify({
                     email: formData.email,
-                    fullName: formData.fullName || 'User',
-                    role: selectedRole
+                    fullName: formData.fullName || 'User'
                 }))
                 
-                // Direct redirect based on selected role
-                if (selectedRole === 'admin') {
-                    router.push('/admin-dashboard')
-                } else {
-                    router.push('/dashboard')
-                }
+                // Redirect to dashboard
+                router.push('/admin-dashboard')
             }
         } catch (error) {
             console.error('Login error:', error)
@@ -231,45 +214,10 @@ export default function Login() {
                         }}
                     ></div>
                     <div className="relative z-10">
-                        {/* Role Selection - Show before form */}
-                        <div className="mb-6 lg:mb-8">
-                            <p className="text-gray-400 text-sm text-center mb-4">Select your role to continue</p>
-                            
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => handleRoleSelect('user')}
-                                    className={`flex-1 flex items-center justify-center px-4 py-3 border rounded-xl text-sm font-medium transition-all ${
-                                        selectedRole === 'user'
-                                            ? 'border-green-500 bg-green-500/20 text-green-400'
-                                            : 'border-[#3a3a3a] text-gray-400 hover:text-white hover:border-[#4a4a4a]'
-                                    }`}
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    User
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => handleRoleSelect('admin')}
-                                    className={`flex-1 flex items-center justify-center px-4 py-3 border rounded-xl text-sm font-medium transition-all ${
-                                        selectedRole === 'admin'
-                                            ? 'border-blue-500 bg-blue-500/20 text-blue-400'
-                                            : 'border-[#3a3a3a] text-gray-400 hover:text-white hover:border-[#4a3a3a]'
-                                    }`}
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Admin
-                                </button>
-                            </div>
-                            
-                            {errors.role && (
-                                <p className="text-red-400 text-xs mt-2 text-center">{errors.role}</p>
-                            )}
+                        {/* Heading */}
+                        <div className="text-center mb-6 lg:mb-8">
+                            <h1 className="text-white text-2xl lg:text-3xl font-bold mb-2">Login your admin Portal</h1>
+                            <p className="text-gray-400 text-sm">Access your trading dashboard</p>
                         </div>
 
                         {/* Tabs */}
