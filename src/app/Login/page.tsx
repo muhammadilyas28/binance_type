@@ -180,7 +180,7 @@ export default function Login() {
                             role: 'user'
                         }))
                         
-                        router.push('/dashboard')
+                        router.push('/admin-dashboard')
                     } else {
                         setErrors({ email: 'Invalid user credentials' })
                     }
